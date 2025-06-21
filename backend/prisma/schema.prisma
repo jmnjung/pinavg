@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  username  String   @unique @db.VarChar(20)
+  createdAt DateTime @default(now())
+  games     Game[]
+}
+
+model Game {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique @default(nanoid(6))
+  score     Int      @default(0)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  frames    Frame[]
+
+  @@index([userId])
+}
+
+model Frame {
+  id                  Int     @id @default(autoincrement())
+  number              Int
+  firstNumPins        Int
+  secondNumPins       Int?
+  thirdNumPins        Int?
+  score               Int?
+  firstRemainingPins  String  @db.VarChar(20)
+  secondRemainingPins String? @db.VarChar(20)
+  thirdRemainingPins  String? @db.VarChar(20)
+  spareCase           String? @db.VarChar(20)
+  game                Game    @relation(fields: [gameId], references: [id])
+  gameId              Int
+
+  @@unique([gameId, number])
+  @@index([gameId])
+}
